@@ -4,12 +4,22 @@
 
 [x] Store alert to elastic
 
+[x] Capture prometheus request
+
 [ ] Expose metrics to "/metrics"
 
-[ ] Send request to alertmanager ( custom action)
+[ ] Send request to prometheus (time series in past)
 
-# config alertmanger
-- Config alertmanager send alert to tools (as webhook) 
-# config prometheus 
-- Add address to 'alermanagers' to capture what prometheus send to alermanager.
+[ ] Edit data before store in elastic
+
+# Nhận alerts từ alertmanager
+- Cấu hình alertmanager gửi tới địa chỉ đang lắng nghe dưới dạng webhook-config (/webhook path)
+
+# Bắt request prometheus gửi cho alertmanager
+- Thêm địa chỉ của tool đang lắng nghe vào `alertmangers` của prometheus.yml ( as alertmanager) 
+- Prometheus tạo alert bằng request POST cho alertmanager bằng api nên tool này handle ở path /api/v1/alerts. 
+
+*Note: 
+- Main flie : http_server.go
+
 

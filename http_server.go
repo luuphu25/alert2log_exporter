@@ -63,7 +63,7 @@ func webhook(client *elastic.Client, indexName string, req *http.Request) {
 
 func getAlert(client *elastic.Client, indexName string, req *http.Request){
 	//resp, err := http.Get("http://127.0.0.1:9093/api/v2/alerts")
-	fmt.Printf("Get alert from prometheus\n")
+	fmt.Printf("Get alert pending \n")
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil{
 		panic(err)

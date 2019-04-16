@@ -1,6 +1,13 @@
 package model
 
-import "time"
+import (
+	"time"
+	"strconv"
+	"strings"
+	"math"
+	"fmt"
+	"encoding/json"
+)
 
 
 type Notification struct {
@@ -24,23 +31,10 @@ type Notification struct {
 	// Timestamp records when the alert notification was received
 	Timestamp string `json:"@timestamp"`
 }
-type temp struct {
-	Status string `json:"status"`
-	Data   struct {
-		ResultType string `json:"resultType"`
-		Result     []struct {
-			Metric struct {
-				Name     string `json:"__name__"`
-				Instance string `json:"instance"`
-				Job      string `json:"job"`
-			} `json:"metric"`
-			Values [][]interface{} `json:"values"`
-		} `json:"result"`
-	} `json:"data"`
-}
 type Time int64
 
 type SampleValue float64
+
 
 type SamplePair struct {
 	Timestamp Time       `json:"timestamp"`
@@ -106,6 +100,9 @@ func (v *SampleValue) UnmarshalJSON(b []byte) error {
 func (s *SamplePair) UnmarshalJSON(b []byte) error {
 	v := [...]json.Unmarshaler{&s.Timestamp, &s.Value}
 	return json.Unmarshal(b, &v)
+}
+func (s SamplePair) String() string {
+	return fmt.Sprintf("%s @[%s]", s.Value, s.Timestamp)
 }
 
 type Query_struct struct {

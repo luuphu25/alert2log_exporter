@@ -7,35 +7,28 @@ import (
 	"net/http"
 	"github.com/olivere/elastic"
 	"context"
-	"strconv"
 	"io/ioutil"
-	"strings"
-	"math"
 	"github.com/luuphu25/alert2log_exporter/model"
 
 
 
 )
-func create_query(url string, metric string, time_start_s string, time_end_s string, step string){
-	var query string = url + "/api/v1/query_range?query=" + metric + "&start=" + time_start_s + "&end=" +time_end_s + "&step="+step 
-	return query
-
-}
 
 func main() {
-	//var time_start_s string
-	//var time_end_s string
 	loc := time.FixedZone("UTC-0", 0)
 	//m, _ := time.ParseDuration("5m")
-	var metric string = "up"
+	var metric string = "mem_used"
 	var step string = "15s"
 	time_end := time.Now().In(loc)
-	time_start := time_end.Add(-time.Minute*5)
+	time_start := time_end.Add(-time.Minute*5) //for 5m
 	time_end_s := time_end.Format(time.RFC3339)
 	time_start_s := time_start.Format(time.RFC3339)
-	url := "http://127.0.0.1:9090"
-	var query string = create_query(metric, time_start_s, time_end_s, step)
+	url := "http://61.28.251.119:9090"
+	query := CreateQuery(url, metric, time_start_s, time_end_s, step)
+	
+	fmt.Printf(query + "\n")
 	req, err := http.Get(query)
+
 
 	if err != nil {
         panic(err)
@@ -45,17 +38,25 @@ func main() {
 	var target model.Query_struct
 	//json.NewDecoder(req.Body).Decode(&target)
 	json.Unmarshal(body, &target)
-	//var url string = "http://127.0.0.1:9200"
-	//var indexName string = "www"
+	fmt.Printf(target.Data.Result[0].Values[0].String()) // test print SamplePair
+
+	var es_url string = "http://127.0.0.1:9200"
+	var indexName string = "test_query"
 	//create client elastic
-	client, err := elastic.NewClient(elastic.SetURL(url))
+	client, err := elastic.NewClient(elastic.SetURL(es_url))
 
 	if err != nil{
 		panic(err)
-	}
-	//InsertEs(client, target, indexName)
-	fmt.Printf(target.)
+	} 
+	InsertEs(client, target, indexName)
 }
+
+func CreateQuery(url string, metric string, time_start_s string, time_end_s string, step string) string {
+	var query string
+	query  = url + "/api/v1/query_range?query=" + metric + "&start=" + time_start_s + "&end=" +time_end_s + "&step="+ step 
+	return query
+}
+
 
 func InsertEs(client *elastic.Client, data model.Query_struct, indexName string){
 	ctx := context.Background()

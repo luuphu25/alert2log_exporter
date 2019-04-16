@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"io"
 	"net/http"
-	//"time"
+	"time"
 	"github.com/olivere/elastic"
 	"github.com/luuphu25/alert2log_exporter/model"
 	"github.com/luuphu25/alert2log_exporter/query"
@@ -70,7 +71,24 @@ func webhook(client *elastic.Client, indexName string, req *http.Request) {
 	var complete_data model.Log_Data
 	complete_data.AlertInfo = alert_receive
 	complete_data.PastData = past_data
+	// insert into Elastich
 	InsertEs(client, complete_data, indexName)
+	date := time.Now().UTC().Format("01-02-2006")
+	var filename = "logAlert_" + date + ".json"
+	file, _ := json.MarshalIndent(complete_data, "", " ")
+	// write log file
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+
+	if _, err = f.Write(file); err != nil {
+		panic(err)
+	}
+	f.WriteString("\n")
+	fmt.Printf("write log success")
 
 
 

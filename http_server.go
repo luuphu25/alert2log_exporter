@@ -7,12 +7,13 @@ import (
 	"io/ioutil"
 	"io"
 	"net/http"
-	"time"
+	//"time"
 	"github.com/olivere/elastic"
 	"github.com/luuphu25/alert2log_exporter/model"
+	"github.com/luuphu25/alert2log_exporter/query"
 )
 // Insert data in elastic
-func InsertEs(client *elastic.Client, data model.Notification, indexName string){
+func InsertEs(client *elastic.Client, data model.Log_Data, indexName string){
 	ctx := context.Background()
 	exists, err := client.IndexExists(indexName).Do(ctx)
 	if err != nil {
@@ -46,16 +47,32 @@ func Hello(res http.ResponseWriter, req *http.Request) {
 }
 // handle email send by alertmanager 
 func webhook(client *elastic.Client, indexName string, req *http.Request) {
-	
+	var metric string = "node_memory_MemFree_bytes"
+	var step string = "15s"
+	//prometheus_url := "http://61.28.251.119:9090"
+	prometheus_url := "http://127.0.0.1:9090"
+	//var indexName = "logdb"
 	decode := json.NewDecoder(req.Body)
 	// create variable (type struct Notification) to handle data send by alertmanage
-	var t model.Notification
-	err := decode.Decode(&t)
+	var alert_receive model.Notification
+	err := decode.Decode(&alert_receive)
 	if err != nil {
 		panic(err)
 	}
-	t.Timestamp = time.Now().Format(time.RFC3339)
-	InsertEs(client, t, indexName)
+	//alert.Timestamp = time.Now().Format(time.RFC3339)
+	//InsertEs(client, t, indexName)
+	start_time, end_time := query.CreateTime(alert_receive.Alerts[0].StartsAt)
+	fmt.Printf(start_time + " : " + end_time)
+	var query_command = query.CreateQuery(prometheus_url, metric, start_time, end_time, step)
+	fmt.Printf("Query: " + query_command + "\n")
+	var past_data  model.Query_struct
+	past_data = query.Query_past(query_command)
+	var complete_data model.Log_Data
+	complete_data.AlertInfo = alert_receive
+	complete_data.PastData = past_data
+	InsertEs(client, complete_data, indexName)
+
+
 
 }
 
@@ -73,8 +90,8 @@ func getAlert(client *elastic.Client, indexName string, req *http.Request){
 
 }
 func main() {
-	var url string = "http://192.168.146.131:9200"
-	var indexName string = "testdb"
+	var url string = "http://127.0.0.1:9200"
+	var indexName string = "logdb"
 	//create client elastic
 	client, err := elastic.NewClient(elastic.SetURL(url))
 

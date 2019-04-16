@@ -29,7 +29,7 @@ type Notification struct {
 	GroupKey          string            `json:"groupKey"`
 
 	// Timestamp records when the alert notification was received
-	Timestamp string `json:"@timestamp"`
+	//Timestamp string `json:"@timestamp"`
 }
 type Time int64
 
@@ -114,4 +114,8 @@ type Query_struct struct {
 			Values []SamplePair `json:"values"`
 		} `json:"Result"`
 	}
+}
+type Log_Data struct {
+	AlertInfo Notification `json:"info"`
+	PastData Query_struct `json:"past_data`
 }

@@ -8,9 +8,13 @@
 
 [ ] Expose metrics to "/metrics"
 
-[ ] Send request to prometheus (time series in past)
+[x] Send request to prometheus (time series in past)
 
-[ ] Edit data before store in elastic
+[x] Edit data before store in elastic
+
+[] Check error metrics not exists
+    get metric from log 
+
 
 # Nhận alerts từ alertmanager
 - Cấu hình alertmanager gửi tới địa chỉ đang lắng nghe dưới dạng webhook-config (/webhook path)

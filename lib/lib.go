@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/olivere/elastic"
 	"context"
+	"github.com/luuphu25/alert2log_exporter/model"
 )
 
 func WriteFile(data []byte) {

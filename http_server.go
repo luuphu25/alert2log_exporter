@@ -12,30 +12,9 @@ import (
 	"github.com/olivere/elastic"
 	"github.com/luuphu25/alert2log_exporter/model"
 	"github.com/luuphu25/alert2log_exporter/query"
+	"github.com/luuphu25/alert2log_exporter/lib"
 )
-// Insert data in elastic
-func InsertEs(client *elastic.Client, data model.Log_Data, indexName string){
-	ctx := context.Background()
-	exists, err := client.IndexExists(indexName).Do(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	if !exists {
-		_, err = client.CreateIndex(indexName).Do(ctx)
-		if err != nil {
-			panic(err)
-		}
-	}
-	_, err = client.Index().Index(indexName).Type("doc").BodyJson(data).Do(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("\nInsert to Elastic success\n")
-}
-
-// Hello path 
+// Hello path testing 
 func Hello(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set(
 		"Content-Type",
@@ -50,47 +29,36 @@ func Hello(res http.ResponseWriter, req *http.Request) {
 func webhook(client *elastic.Client, indexName string, req *http.Request) {
 	var metric string = "node_memory_MemFree_bytes"
 	var step string = "15s"
-	//prometheus_url := "http://61.28.251.119:9090"
 	prometheus_url := "http://127.0.0.1:9090"
-	//var indexName = "logdb"
+	var alert_receive model.Notification //alert struct
+	var past_data  model.Query_struct // past data struct
+	var complete_data model.Log_Data // merge struct
 	decode := json.NewDecoder(req.Body)
+	
 	// create variable (type struct Notification) to handle data send by alertmanage
-	var alert_receive model.Notification
-	err := decode.Decode(&alert_receive)
+		err := decode.Decode(&alert_receive)
 	if err != nil {
 		panic(err)
 	}
-	//alert.Timestamp = time.Now().Format(time.RFC3339)
-	//InsertEs(client, t, indexName)
+	
+	// Query data from prometheus	
 	start_time, end_time := query.CreateTime(alert_receive.Alerts[0].StartsAt)
 	fmt.Printf(start_time + " : " + end_time)
 	var query_command = query.CreateQuery(prometheus_url, metric, start_time, end_time, step)
-	fmt.Printf("Query: " + query_command + "\n")
-	var past_data  model.Query_struct
+	//fmt.Printf("Query: " + query_command + "\n")
 	past_data = query.Query_past(query_command)
-	var complete_data model.Log_Data
+
+	// merge alert data + query data 
 	complete_data.AlertInfo = alert_receive
 	complete_data.PastData = past_data
+
 	// insert into Elastich
-	InsertEs(client, complete_data, indexName)
-	date := time.Now().UTC().Format("01-02-2006")
-	var filename = "logAlert_" + date + ".json"
-	file, _ := json.MarshalIndent(complete_data, "", " ")
+	lib.InsertEs(client, complete_data, indexName)
+
 	// write log file
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-
-	defer f.Close()
-
-	if _, err = f.Write(file); err != nil {
-		panic(err)
-	}
-	f.WriteString("\n")
-	fmt.Printf("write log success")
-
-
+	file, _ := json.MarshalIndent(complete_data, "", " ")
+	lib.WriteFile(file)
+	
 
 }
 
@@ -104,12 +72,12 @@ func getAlert(client *elastic.Client, indexName string, req *http.Request){
 		panic(err)
 	}
 	bodyString := string(body)
-	fmt.Printf(bodyString)
+	fmt.Printf(bodyString + "\n")
 
 }
 func main() {
 	var url string = "http://127.0.0.1:9200"
-	var indexName string = "logdb"
+	var indexName string = "log_db"
 	//create client elastic
 	client, err := elastic.NewClient(elastic.SetURL(url))
 

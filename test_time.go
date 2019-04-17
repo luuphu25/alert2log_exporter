@@ -11,4 +11,6 @@ func main(){
 	//fmt.Printf(start_time)
 	convert_time := start_time.Format("01_11_2006")
 	fmt.Printf(convert_time)
+	times := string(time.Now().Unix())
+	fmt.Printf(times)
 }

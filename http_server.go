@@ -1,14 +1,14 @@
 package main
 
 import (
-	"context"
+	//"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
+	//"os"
 	"io"
 	"net/http"
-	"time"
+	//"time"
 	"github.com/olivere/elastic"
 	"github.com/luuphu25/alert2log_exporter/model"
 	"github.com/luuphu25/alert2log_exporter/query"

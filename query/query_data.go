@@ -8,7 +8,7 @@ import (
 	//"github.com/olivere/elastic"
 	//"context"
 	"io/ioutil"
-	"github.com/luuphu25/alert2log_exporter/model"
+	"github.com/luuphu25/alert2log_exporter/template"
 
 
 
@@ -20,7 +20,7 @@ func CreateTime(start_at time.Time) (string, string){
 
 }
 
-func Query_past(query string) model.Query_struct{
+func Query_past(query string) template.Query_struct{
 	//loc := time.FixedZone("UTC-0", 0)
 	//m, _ := time.ParseDuration("5m")
 	//var metric string = "mem_used"
@@ -41,7 +41,7 @@ func Query_past(query string) model.Query_struct{
     }
 	defer req.Body.Close()
 	body, err := ioutil.ReadAll(req.Body)
-	var target model.Query_struct
+	var target template.Query_struct
 	//json.NewDecoder(req.Body).Decode(&target)
 	json.Unmarshal(body, &target)
 	fmt.Printf(target.Data.Result[0].Values[0].String())
@@ -66,7 +66,7 @@ func CreateQuery(url string, metric string, time_start_s string, time_end_s stri
 }
 /* 
 
-func InsertEs(client *elastic.Client, data model.Query_struct, indexName string){
+func InsertEs(client *elastic.Client, data template.Query_struct, indexName string){
 	ctx := context.Background()
 	exists, err := client.IndexExists(indexName).Do(ctx)
 	if err != nil {

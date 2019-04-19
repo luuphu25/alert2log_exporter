@@ -5,10 +5,11 @@ import (
 	"log"
 	"os"
 	"time"
+	//"encoding/json"
 	"fmt"
 	"github.com/olivere/elastic"
 	"context"
-	"github.com/luuphu25/alert2log_exporter/model"
+	"github.com/luuphu25/alert2log_exporter/template"
 )
 
 func WriteFile(data []byte) {
@@ -43,7 +44,7 @@ func WriteFile(data []byte) {
 	
 }
 
-func InsertEs(client *elastic.Client, data model.Log_Data, indexName string){
+func InsertEs(client *elastic.Client, data template.Log_Data, indexName string){
 	ctx := context.Background()
 	exists, err := client.IndexExists(indexName).Do(ctx)
 	if err != nil {

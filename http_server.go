@@ -10,7 +10,7 @@ import (
 	"net/http"
 	//"time"
 	"github.com/olivere/elastic"
-	"github.com/luuphu25/alert2log_exporter/model"
+	"github.com/luuphu25/alert2log_exporter/template"
 	"github.com/luuphu25/alert2log_exporter/query"
 	"github.com/luuphu25/alert2log_exporter/lib"
 )
@@ -30,9 +30,9 @@ func webhook(client *elastic.Client, indexName string, req *http.Request) {
 	var metric string = "node_memory_MemFree_bytes"
 	var step string = "15s"
 	prometheus_url := "http://127.0.0.1:9090"
-	var alert_receive model.Notification //alert struct
-	var past_data  model.Query_struct // past data struct
-	var complete_data model.Log_Data // merge struct
+	var alert_receive template.Notification //alert struct
+	var past_data  template.Query_struct // past data struct
+	var complete_data template.Log_Data // merge struct
 	decode := json.NewDecoder(req.Body)
 	
 	// create variable (type struct Notification) to handle data send by alertmanage
